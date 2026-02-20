@@ -23,7 +23,7 @@ For package documentation, see [dee-dee-r.cs-emitter/README.md](dee-dee-r.cs-emi
 Open `Packages/manifest.json` in your project and add the following entry to the `dependencies` object:
 
 ```json
-"dee-dee-r.cs-emitter": "https://github.com/DeeDeeR/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter"
+"dee-dee-r.cs-emitter": "https://github.com/daviddellarossa/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter"
 ```
 
 ### Option 3 — Local file path
