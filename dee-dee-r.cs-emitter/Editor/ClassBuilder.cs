@@ -220,6 +220,20 @@ namespace DeeDeeR.CsEmitter
         }
         
         /// <summary>
+        /// Adds a constructor to the class and outputs the builder instance for additional configuration.
+        /// </summary>
+        /// <param name="constructorBuilder">The constructor builder instance created by this method.</param>
+        /// <param name="configure">An optional action to configure the constructor.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public ClassBuilder WithConstructorOut(out ConstructorBuilder constructorBuilder, Action<ConstructorBuilder> configure = null)
+        {
+            constructorBuilder = ConstructorBuilder.Build(_indentEmitter, _className);
+            configure?.Invoke(constructorBuilder);
+            _constructors.Add(constructorBuilder);
+            return this;
+        }
+        
+        /// <summary>
         /// Adds a method to the class and returns the method builder via an out parameter.
         /// </summary>
         /// <param name="methodName">The name of the method.</param>

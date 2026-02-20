@@ -182,6 +182,20 @@ namespace DeeDeeR.CsEmitter
         }
         
         /// <summary>
+        /// Adds a constructor to the struct and outputs the builder instance for additional configuration.
+        /// </summary>
+        /// <param name="constructorBuilder">The constructor builder instance created by this method.</param>
+        /// <param name="configure">An optional action to configure the constructor.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public StructBuilder WithConstructorOut(out ConstructorBuilder constructorBuilder, Action<ConstructorBuilder> configure = null)
+        {
+            constructorBuilder = ConstructorBuilder.Build(_indentEmitter, _structName);
+            configure?.Invoke(constructorBuilder);
+            _constructors.Add(constructorBuilder);
+            return this;
+        }
+        
+        /// <summary>
         /// Adds multiple fields to the struct from a collection.
         /// </summary>
         /// <typeparam name="T">The type of elements in the source collection.</typeparam>

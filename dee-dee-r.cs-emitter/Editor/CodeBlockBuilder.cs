@@ -106,7 +106,7 @@ namespace DeeDeeR.CsEmitter
         /// <param name="methodName">The name of the method to call.</param>
         /// <param name="args">The arguments to pass to the method.</param>
         /// <returns>This builder instance for method chaining.</returns>
-        public CodeBlockBuilder Call(string target, string methodName, params string[] args)
+        public CodeBlockBuilder CallOn(string target, string methodName, params string[] args)
         {
             _statements.Add(new MethodCallStatement(target, methodName, args));
             return this;
@@ -133,7 +133,7 @@ namespace DeeDeeR.CsEmitter
         /// <param name="methodName">The name of the method to call.</param>
         /// <param name="args">The arguments to pass to the method.</param>
         /// <returns>This builder instance for method chaining.</returns>
-        public CodeBlockBuilder CallAndAssign(string resultName, string target, string methodName, params string[] args)
+        public CodeBlockBuilder CallAndAssignOn(string resultName, string target, string methodName, params string[] args)
         {
             _statements.Add(new CallAndAssignStatement(target, resultName, null, methodName, args));
             return this;

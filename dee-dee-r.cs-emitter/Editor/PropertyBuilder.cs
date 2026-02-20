@@ -53,6 +53,8 @@ namespace DeeDeeR.CsEmitter
         private AccessorBodyBuilder _setter;
         private Visibility? _getterVisibility;
         private Visibility? _setterVisibility;
+        private bool _hasGetter = false;
+        private bool _hasSetter = false;
         private string _defaultValue;
 
         private XmlDocBuilder _xmlDoc;
@@ -127,6 +129,7 @@ namespace DeeDeeR.CsEmitter
         /// <returns>This builder instance for method chaining.</returns>
         public PropertyBuilder WithAutoGetter(Visibility? visibility = null)
         {
+            _hasGetter = true;
             _getter = null;
             _getterVisibility = visibility;
             return this;
@@ -139,6 +142,7 @@ namespace DeeDeeR.CsEmitter
         /// <returns>This builder instance for method chaining.</returns>
         public PropertyBuilder WithAutoSetter(Visibility? visibility = null)
         {
+            _hasSetter = true;
             _setter = null;
             _setterVisibility = visibility;
             return this;
@@ -152,6 +156,7 @@ namespace DeeDeeR.CsEmitter
         /// <returns>This builder instance for method chaining.</returns>
         public PropertyBuilder WithGetter(AccessorBodyBuilder getter, Visibility? visibility = null)
         {
+            _hasGetter = true;
             _getter = getter;
             _getterVisibility = visibility;
             return this;
@@ -165,6 +170,7 @@ namespace DeeDeeR.CsEmitter
         /// <returns>This builder instance for method chaining.</returns>
         public PropertyBuilder WithSetter(AccessorBodyBuilder setter, Visibility? visibility = null)
         {
+            _hasSetter = true;
             _setter = setter;
             _setterVisibility = visibility;
             return this;
@@ -181,12 +187,16 @@ namespace DeeDeeR.CsEmitter
             return this;
         }
 
+        
         /// <summary>
         /// Emits the complete C# code for the property.
         /// </summary>
         /// <returns>A string containing the generated C# property code.</returns>
         public string Emit()
         {
+            if (_expressionBody != null && (_hasGetter || _hasSetter))
+                throw new InvalidOperationException(
+                    $"Property '{_propertyName}': cannot combine an expression body with a getter or setter.");
             var sb = new StringBuilder();
 
             if (_xmlDoc != null)
@@ -275,8 +285,8 @@ namespace DeeDeeR.CsEmitter
             return sb.ToString();
         }
 
-        private bool HasGetter() => _getterVisibility.HasValue || _getter != null;
-        private bool HasSetter() => _setterVisibility.HasValue || _setter != null;
+        private bool HasGetter() => _hasGetter;
+        private bool HasSetter() => _hasSetter;
 
         private string BuildModifiers()
         {
