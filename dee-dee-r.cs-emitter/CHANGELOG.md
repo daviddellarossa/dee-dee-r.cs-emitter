@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.0.1-exp.3] - 2026-02-20
+
+### Added
+
+- `FileBuilder.RelativePath` — public readonly property exposing the relative path where the file will be saved.
+- `ClassBuilder.WithBaseClass` — added support for class inheritance; XML documentation added for both overloads (string and CsType).
+
 ## [0.0.1-exp.1] - 2026-02-20
 
 ### Added

@@ -76,6 +76,56 @@ Multiple constraints for the same type parameter are not merged automatically â€
 
 ---
 
+### Inheritance
+
+Use `WithBaseClass()` to specify a base class. It accepts either a string or a `CsType` instance.
+
+#### Simple inheritance
+
+```csharp
+ClassBuilder.Build(emitter, "MyHandler")
+    .WithBaseClass("BaseHandler")
+    .Emit();
+```
+
+Generates:
+
+```csharp
+public class MyHandler : BaseHandler
+```
+
+#### Generic base class
+
+```csharp
+ClassBuilder.Build(emitter, "MyHandler")
+    .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("MyMessage")))
+    .Emit();
+```
+
+Generates:
+
+```csharp
+public class MyHandler : BaseHandler<MyMessage>
+```
+
+#### With type parameters on the derived class
+
+```csharp
+ClassBuilder.Build(emitter, "MyHandler")
+    .WithTypeParameter("T")
+    .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("T")))
+    .WithTypeConstraint("T", "IMessage")
+    .Emit();
+```
+
+Generates:
+
+```csharp
+public class MyHandler<T> : BaseHandler<T> where T : IMessage
+```
+
+---
+
 ### Adding members
 
 All member-adding methods are optional and can be combined in any order. Within the emitted class, members are always output in this fixed order regardless of the order they were added:
