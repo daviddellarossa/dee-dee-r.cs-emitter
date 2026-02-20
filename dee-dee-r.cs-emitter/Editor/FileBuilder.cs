@@ -29,6 +29,11 @@ namespace DeeDeeR.CsEmitter
         private readonly List<StructBuilder> _structs = new ();
         private readonly string _relativePath;
 
+        /// <summary>
+        /// Gets the relative path where the file will be saved.
+        /// </summary>
+        public string RelativePath => _relativePath;
+
         private FileBuilder(string relativePath)
         {
             _relativePath = relativePath;
