@@ -543,5 +543,104 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             Assert.That(cls.Emit(), Does.Contain("string _name;"));
             Assert.That(cls.Emit(), Does.Contain("bool _flag;"));
         }
+        
+        // -------------------------------------------------------------------------
+        // Inheritance
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithBaseClass_EmitsBaseClass()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithBaseClass("BaseHandler")
+                .Emit();
+
+            Assert.That(cls, Does.Contain(": BaseHandler"));
+        }
+
+        [Test]
+        public void Emit_WithBaseClass_BaseClassAppearsAfterClassName()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithBaseClass("BaseHandler")
+                .Emit();
+
+            var classNameIndex = cls.IndexOf("MyHandler");
+            var baseClassIndex = cls.IndexOf("BaseHandler");
+
+            Assert.That(classNameIndex, Is.LessThan(baseClassIndex));
+        }
+
+        [Test]
+        public void Emit_WithBaseClass_EmitsCorrectDeclaration()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithBaseClass("BaseHandler")
+                .Emit();
+
+            Assert.That(Normalize(cls), Does.StartWith("public class MyHandler : BaseHandler"));
+        }
+
+        [Test]
+        public void Emit_WithGenericBaseClass_EmitsCorrectly()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("MyMessage")))
+                .Emit();
+
+            Assert.That(Normalize(cls),
+                Does.StartWith("public class MyHandler : BaseHandler<MyMessage>"));
+        }
+
+        [Test]
+        public void Emit_WithGenericBaseClassAndTypeParameter_EmitsCorrectly()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithTypeParameter("T")
+                .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("T")))
+                .WithTypeConstraint("T", "IMessage")
+                .Emit();
+
+            Assert.That(Normalize(cls),
+                Does.StartWith("public class MyHandler<T> : BaseHandler<T>"));
+            Assert.That(cls, Does.Contain("where T : IMessage"));
+        }
+
+        [Test]
+        public void Emit_WithBaseClassAndTypeConstraint_ConstraintAppearsAfterBaseClass()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithTypeParameter("T")
+                .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("T")))
+                .WithTypeConstraint("T", "IMessage")
+                .Emit();
+
+            var baseClassIndex = cls.IndexOf("BaseHandler<T>");
+            var constraintIndex = cls.IndexOf("where T : IMessage");
+
+            Assert.That(baseClassIndex, Is.LessThan(constraintIndex));
+        }
+
+        [Test]
+        public void Emit_WithSealedModifierAndBaseClass_EmitsCorrectly()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyHandler")
+                .WithSealedModifier()
+                .WithBaseClass("BaseHandler")
+                .Emit();
+
+            Assert.That(Normalize(cls),
+                Does.StartWith("public sealed class MyHandler : BaseHandler"));
+        }
+
+        [Test]
+        public void Emit_WithoutBaseClass_NoColonInDeclaration()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyClass")
+                .Emit();
+
+            var declarationLine = cls.Split('\n').First(l => l.Contains("class MyClass"));
+            Assert.That(declarationLine, Does.Not.Contain(":"));
+        }
     }
 }

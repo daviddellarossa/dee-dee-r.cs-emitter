@@ -25,10 +25,40 @@ namespace DeeDeeR.CsEmitter
     ///     .Emit();
     /// </code>
     /// </example>
+    /// <example>
+    /// Simple inheritance
+    /// <code>
+    ///     ClassBuilder.Build(emitter, "MyHandler")
+    ///         .WithBaseClass("BaseHandler")
+    ///         .Emit();
+    /// → public class MyHandler : BaseHandler
+    /// </code>
+    /// </example>
+    /// <example>
+    /// Generic base class
+    /// <code>
+    ///     ClassBuilder.Build(emitter, "MyHandler")
+    ///         .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("MyMessage")))
+    ///         .Emit();
+    /// → public class MyHandler : BaseHandler&lt;MyMessage&gt;
+    /// </code>
+    /// </example>
+    /// <example>
+    /// With type parameters on the derived class too
+    /// <code>
+    ///     ClassBuilder.Build(emitter, "MyHandler")
+    ///         .WithTypeParameter("T")
+    ///         .WithBaseClass(CsType.Generic("BaseHandler", CsType.Of("T")))
+    ///         .WithTypeConstraint("T", "IMessage")
+    ///         .Emit();
+    /// → public class MyHandler&lt;T&gt; : BaseHandler&lt;T&gt; where T : IMessage
+    /// </code>
+    /// </example>
     public sealed class ClassBuilder
     {
         private readonly IndentEmitter _indentEmitter;
         private readonly string _className;
+        private string _baseClass = null;
         private Visibility _visibility = Visibility.Public;
         private bool _isStatic;
         private bool _isSealed;
@@ -145,6 +175,28 @@ namespace DeeDeeR.CsEmitter
         public ClassBuilder WithTypeConstraint(string typeParam, string constraint)
         {
             _typeConstraints.Add((typeParam, constraint));
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the base class for the class.
+        /// </summary>
+        /// <param name="baseClass">The name of the base class.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public ClassBuilder WithBaseClass(string baseClass)
+        {
+            _baseClass = baseClass;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the base class for the class.
+        /// </summary>
+        /// <param name="baseClass">The type of the base class.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public ClassBuilder WithBaseClass(CsType baseClass)
+        {
+            _baseClass = baseClass.Emit();
             return this;
         }
 
@@ -412,6 +464,9 @@ namespace DeeDeeR.CsEmitter
 
             if (_typeParameters.Count > 0)
                 sb.Append($"<{string.Join(", ", _typeParameters)}>");
+            
+            if (_baseClass != null)
+                sb.Append($" : {_baseClass}");
 
             if (_typeConstraints.Count > 0)
             {
