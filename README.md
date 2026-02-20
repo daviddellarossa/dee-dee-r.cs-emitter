@@ -6,6 +6,38 @@ For package documentation, see [dee-dee-r.cs-emitter/README.md](dee-dee-r.cs-emi
 
 ---
 
+## Installation
+
+### Option 1 — Git URL (Package Manager UI)
+
+1. Open **Window > Package Manager** in the Unity Editor.
+2. Click the **+** button in the top-left corner and select **Add package from git URL…**
+3. Enter the URL of this repository followed by the path to the package folder:
+   ```
+   https://github.com/DeeDeeR/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter
+   ```
+4. Click **Add**. Unity will fetch and import the package automatically.
+
+### Option 2 — Git URL (manifest.json)
+
+Open `Packages/manifest.json` in your project and add the following entry to the `dependencies` object:
+
+```json
+"dee-dee-r.cs-emitter": "https://github.com/DeeDeeR/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter"
+```
+
+### Option 3 — Local file path
+
+Clone this repository anywhere on your machine, then add the following entry to your project's `Packages/manifest.json`, adjusting the path to match your local clone:
+
+```json
+"dee-dee-r.cs-emitter": "file:/path/to/dee-dee-r.cs-emitter/dee-dee-r.cs-emitter"
+```
+
+This option is useful if you want to modify the package source alongside your project.
+
+---
+
 ## Repository structure
 
 ```
