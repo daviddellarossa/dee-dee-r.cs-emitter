@@ -182,6 +182,37 @@ namespace DeeDeeR.CsEmitter
         }
         
         /// <summary>
+        /// Adds a constructor to the struct only if the specified condition is true.
+        /// Useful for conditionally adding constructors when driving from a collection.
+        /// </summary>
+        /// <param name="condition">The condition to evaluate.</param>
+        /// <param name="configure">An action to configure the constructor builder.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        /// <example>
+        /// <code>
+        /// structBuilder
+        ///     .WithConstructorIf(
+        ///         messageModel.MessageArgs.Parameters.Count > 0,
+        ///         ctor => ctor
+        ///             .WithParameters(messageModel.MessageArgs.Parameters,
+        ///                 parameter => CsType.Of(parameter.TypeModel.Type.FullName),
+        ///                 parameter => parameter.ToLocalVariableName())
+        ///             .WithBody(body =>
+        ///             {
+        ///                 foreach (var parameter in messageModel.MessageArgs.Parameters)
+        ///                     body.Assign(parameter.ToPropertyName(), parameter.ToLocalVariableName());
+        ///             }));
+        /// </code>
+        /// </example>
+        public StructBuilder WithConstructorIf(bool condition, Action<ConstructorBuilder> configure = null)
+        {
+            if (!condition)
+                return this;
+
+            return WithConstructor(configure);
+        }
+        
+        /// <summary>
         /// Adds a constructor to the struct and outputs the builder instance for additional configuration.
         /// </summary>
         /// <param name="constructorBuilder">The constructor builder instance created by this method.</param>
@@ -323,11 +354,17 @@ namespace DeeDeeR.CsEmitter
                     sb.Append(property.Emit());
                 sb.AppendLine();
             }
-
+            
             if (_constructors.Count > 0)
             {
                 foreach (var constructor in _constructors)
+                {
+                    if (!constructor.HasParameters)
+                        throw new InvalidOperationException(
+                            $"Struct '{_structName}': explicit constructors must have at least one parameter. Remove the constructor or add parameters to it.");
+
                     sb.Append(constructor.Emit());
+                }
                 sb.AppendLine();
             }
 

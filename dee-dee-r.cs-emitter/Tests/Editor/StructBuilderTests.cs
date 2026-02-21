@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using DeeDeeR.CsEmitter;
@@ -323,6 +324,183 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
         
         // -------------------------------------------------------------------------
+        // WithConstructorIf
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void WithConstructorIf_ConditionTrue_AddsConstructor()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(true, ctor => ctor
+                    .WithParameter(CsType.Of("Vector3"), "position")
+                    .WithBody(body => body.Assign("Position", "position")));
+
+            var result = structBuilder.Emit();
+            Assert.That(result, Does.Contain("MyStruct("));
+            Assert.That(result, Does.Contain("Position = position;"));
+        }
+
+        [Test]
+        public void WithConstructorIf_ConditionFalse_DoesNotAddConstructor()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(false, ctor => ctor
+                    .WithParameter(CsType.Of("Vector3"), "position")
+                    .WithBody(body => body.Assign("Position", "position")));
+
+            var result = structBuilder.Emit();
+            Assert.That(result, Does.Not.Contain("MyStruct("));
+        }
+
+        [Test]
+        public void WithConstructorIf_ConditionFalse_DoesNotThrow()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(false, ctor => { });
+
+            Assert.DoesNotThrow(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void WithConstructorIf_ConditionTrue_EmptyConstructor_ThrowsInvalidOperationException()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(true, ctor => { });
+
+            Assert.Throws<InvalidOperationException>(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void WithConstructorIf_EmptyCollection_ConditionFalse_DoesNotAddConstructor()
+        {
+            var parameters = new (CsType Type, string Name)[0];
+
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(
+                    parameters.Length > 0,
+                    ctor => ctor
+                        .WithParameters(parameters, p => p.Type, p => p.Name));
+
+            var result = structBuilder.Emit();
+            Assert.That(result, Does.Not.Contain("MyStruct("));
+        }
+
+        [Test]
+        public void WithConstructorIf_NonEmptyCollection_ConditionTrue_AddsConstructor()
+        {
+            var parameters = new[]
+            {
+                (Type: CsType.Of("Vector3"), Name: "position"),
+                (Type: CsType.Float, Name: "scale"),
+            };
+
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructorIf(
+                    parameters.Length > 0,
+                    ctor => ctor
+                        .WithParameters(parameters, p => p.Type, p => p.Name)
+                        .WithBody(body =>
+                        {
+                            foreach (var p in parameters)
+                                body.Assign(p.Name.ToUpper()[0] + p.Name.Substring(1), p.Name);
+                        }));
+
+            var result = structBuilder.Emit();
+            Assert.That(result, Does.Contain("MyStruct(Vector3 position, float scale)"));
+        }
+
+        [Test]
+        public void WithConstructorIf_ReturnsSameBuilderInstance_ForChaining()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct");
+
+            var returned = structBuilder.WithConstructorIf(false, ctor => { });
+
+            Assert.That(returned, Is.SameAs(structBuilder));
+        }
+
+        [Test]
+        public void WithConstructorIf_ConditionTrue_ReturnsSameBuilderInstance_ForChaining()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct");
+
+            var returned = structBuilder.WithConstructorIf(true, ctor => ctor
+                .WithParameter(CsType.Float, "scale")
+                .WithBody(body => body.Assign("Scale", "scale")));
+
+            Assert.That(returned, Is.SameAs(structBuilder));
+        }
+        
+        // -------------------------------------------------------------------------
+        // Constructor validation
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithEmptyConstructor_ThrowsInvalidOperationException()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructor();
+
+            Assert.Throws<InvalidOperationException>(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void Emit_WithConstructorWithParameters_DoesNotThrow()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructor(c => c
+                    .WithParameter(CsType.Of("Vector3"), "position")
+                    .WithBody(body => body.Assign("Position", "position")));
+
+            Assert.DoesNotThrow(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void Emit_WithNoConstructor_DoesNotThrow()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithField("Position", CsType.Of("Vector3"));
+
+            Assert.DoesNotThrow(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void Emit_WithEmptyConstructorFromOutOverload_ThrowsInvalidOperationException()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct");
+            structBuilder.WithConstructorOut(out var ctor);
+            // No parameters added to ctor
+
+            Assert.Throws<InvalidOperationException>(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void Emit_WithConstructorPopulatedFromEmptyCollection_DoesNotThrow()
+        {
+            var emptyCollection = new (CsType Type, string Name)[0];
+
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct");
+
+            if (emptyCollection.Length > 0)
+            {
+                structBuilder.WithConstructorOut(out var ctor);
+                ctor.WithParameters(emptyCollection, p => p.Type, p => p.Name);
+            }
+
+            Assert.DoesNotThrow(() => structBuilder.Emit());
+        }
+
+        [Test]
+        public void Emit_WithEmptyConstructor_ErrorMessageContainsStructName()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructor();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => structBuilder.Emit());
+            Assert.That(ex.Message, Does.Contain("MyStruct"));
+        }
+        
+        // -------------------------------------------------------------------------
         // Methods
         // -------------------------------------------------------------------------
 
@@ -370,12 +548,14 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         public void Emit_MemberOrdering_PropertiesBeforeConstructors()
         {
             var str = StructBuilder.Build(_emitter, "MyStruct")
-                .WithConstructor()
+                .WithConstructor(c => c
+                    .WithParameter(CsType.Float, "scale")
+                    .WithBody(body => body.Assign("Scale", "scale")))
                 .WithProperty("Scale", CsType.Float, p => p.WithAutoGetter())
                 .Emit();
 
             var propertyIndex = str.IndexOf("float Scale");
-            var ctorIndex = str.IndexOf("public MyStruct()");
+            var ctorIndex = str.IndexOf("public MyStruct(");
 
             Assert.That(propertyIndex, Is.LessThan(ctorIndex));
         }
@@ -385,10 +565,12 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         {
             var str = StructBuilder.Build(_emitter, "MyStruct")
                 .WithMethod("Normalize", CsType.Of("Vector3"))
-                .WithConstructor()
+                .WithConstructor(c => c
+                    .WithParameter(CsType.Of("Vector3"), "position")
+                    .WithBody(body => body.Assign("Position", "position")))
                 .Emit();
 
-            var ctorIndex = str.IndexOf("public MyStruct()");
+            var ctorIndex = str.IndexOf("public MyStruct(");
             var methodIndex = str.IndexOf("Vector3 Normalize()");
 
             Assert.That(ctorIndex, Is.LessThan(methodIndex));
@@ -417,7 +599,9 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             StructBuilder.Build(_emitter, "MyStruct")
                 .WithField("Position", CsType.Of("Vector3"))
                 .WithProperty("Scale", CsType.Float, p => p.WithAutoGetter())
-                .WithConstructor()
+                .WithConstructor(c => c
+                    .WithParameter(CsType.Of("Vector3"), "position")
+                    .WithBody(body => body.Assign("Position", "position")))
                 .WithMethod("Normalize", CsType.Of("Vector3"))
                 .Emit();
 

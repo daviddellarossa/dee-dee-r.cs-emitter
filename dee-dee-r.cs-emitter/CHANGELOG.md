@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.0.1-exp.5] - 2026-02-21
+
+### Added
+
+- `StructBuilder.WithConstructorIf` — conditionally adds a constructor to a struct based on a boolean condition, useful when generating code from models where constructors may only be needed in certain cases.
+
+### Fixed
+
+- `StructBuilder` constructor validation now properly enforces that explicit struct constructors must have at least one parameter, as required by C#.
+- `FieldBuilder.WithDefaultValue` validation for const fields moved to `Emit()` time, throwing `InvalidOperationException` when const fields have empty or whitespace default values.
+
 ## [0.0.1-exp.4] - 2026-02-21
 
 ### Added
