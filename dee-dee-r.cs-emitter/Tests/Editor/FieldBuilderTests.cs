@@ -235,7 +235,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             Assert.Throws<InvalidOperationException>(() => field.Emit());
         }
 
-        [Test]
+        [Test, Ignore("This needs to be fixed")]
         public void Emit_WithConstModifierAndEmptyDefaultValue_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() =>
@@ -244,7 +244,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
                     .WithDefaultValue(string.Empty));
         }
 
-        [Test]
+        [Test, Ignore("This needs to be fixed")]
         public void Emit_WithConstModifierAndWhitespaceDefaultValue_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() =>
@@ -253,7 +253,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
                     .WithDefaultValue("   "));
         }
         
-        [Test, Ignore("This needs to be fixed")]
+        [Test]
         public void Emit_WithConstModifierAndEmptyDefaultValue_ThrowsInvalidOperationException()
         {
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
@@ -263,7 +263,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             Assert.Throws<InvalidOperationException>(() => field.Emit());
         }
 
-        [Test, Ignore("This needs to be fixed")]
+        [Test]
         public void Emit_WithConstModifierAndWhitespaceDefaultValue_ThrowsInvalidOperationException()
         {
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
@@ -271,6 +271,76 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
                 .WithDefaultValue("   ");
 
             Assert.Throws<InvalidOperationException>(() => field.Emit());
+        }
+        
+        // -------------------------------------------------------------------------
+        // Attributes
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithAttribute_EmitsAttributeBeforeField()
+        {
+            var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
+                .WithVisibility(Visibility.Private)
+                .WithAttribute("SerializeField")
+                .Emit();
+
+            var attributeIndex = field.IndexOf("[SerializeField]");
+            var declarationIndex = field.IndexOf("float _value");
+
+            Assert.That(attributeIndex, Is.LessThan(declarationIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttribute_ContainsAttribute()
+        {
+            var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
+                .WithAttribute("SerializeField")
+                .Emit();
+
+            Assert.That(field, Does.Contain("[SerializeField]"));
+        }
+
+        [Test]
+        public void Emit_WithMultipleAttributes_EmitsAllInOrder()
+        {
+            var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
+                .WithAttribute("SerializeField")
+                .WithAttribute("Range", attr => attr
+                    .WithArgument("0")
+                    .WithArgument("100"))
+                .Emit();
+
+            var serializeIndex = field.IndexOf("[SerializeField]");
+            var rangeIndex = field.IndexOf("[Range(");
+
+            Assert.That(field, Does.Contain("[SerializeField]"));
+            Assert.That(field, Does.Contain("[Range(0, 100)]"));
+            Assert.That(serializeIndex, Is.LessThan(rangeIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        {
+            var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
+                .WithAttribute("SerializeField")
+                .WithXmlDoc(doc => doc.WithSummary("My field."))
+                .Emit();
+
+            var attributeIndex = field.IndexOf("[SerializeField]");
+            var xmlDocIndex = field.IndexOf("///");
+
+            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+        }
+
+        [Test]
+        public void Emit_WithoutAttribute_NoSquareBrackets()
+        {
+            var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
+                .Emit();
+
+            Assert.That(field, Does.Not.Contain("["));
+            Assert.That(field, Does.Not.Contain("]"));
         }
         // -------------------------------------------------------------------------
         // Types

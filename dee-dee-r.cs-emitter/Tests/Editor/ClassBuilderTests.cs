@@ -642,5 +642,77 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var declarationLine = cls.Split('\n').First(l => l.Contains("class MyClass"));
             Assert.That(declarationLine, Does.Not.Contain(":"));
         }
+        
+        // -------------------------------------------------------------------------
+        // Attributes
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithAttribute_EmitsAttributeBeforeDeclaration()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MessageBusProvider")
+                .WithAttribute("CreateAssetMenu", attr => attr
+                    .WithArgument("menuName = \"DeeDeeR/Provider\"")
+                    .WithArgument("fileName = \"MessageBusProvider\""))
+                .Emit();
+
+            var attributeIndex = cls.IndexOf("[CreateAssetMenu(");
+            var declarationIndex = cls.IndexOf("public class MessageBusProvider");
+
+            Assert.That(attributeIndex, Is.LessThan(declarationIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttribute_ContainsAttribute()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MessageBusProvider")
+                .WithAttribute("CreateAssetMenu", attr => attr
+                    .WithArgument("menuName = \"DeeDeeR/Provider\"")
+                    .WithArgument("fileName = \"MessageBusProvider\""))
+                .Emit();
+
+            Assert.That(cls, Does.Contain("[CreateAssetMenu(menuName = \"DeeDeeR/Provider\", fileName = \"MessageBusProvider\")]"));
+        }
+
+        [Test]
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyClass")
+                .WithAttribute("SerializeField")
+                .WithXmlDoc(doc => doc.WithSummary("My class."))
+                .Emit();
+
+            var attributeIndex = cls.IndexOf("[SerializeField]");
+            var xmlDocIndex = cls.IndexOf("///");
+
+            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+        }
+
+        [Test]
+        public void Emit_WithMultipleAttributes_EmitsAllInOrder()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyClass")
+                .WithAttribute("Serializable")
+                .WithAttribute("CreateAssetMenu", attr => attr
+                    .WithArgument("menuName = \"My/Menu\""))
+                .Emit();
+
+            var serializableIndex = cls.IndexOf("[Serializable]");
+            var createAssetMenuIndex = cls.IndexOf("[CreateAssetMenu(");
+
+            Assert.That(cls, Does.Contain("[Serializable]"));
+            Assert.That(cls, Does.Contain("[CreateAssetMenu(menuName = \"My/Menu\")]"));
+            Assert.That(serializableIndex, Is.LessThan(createAssetMenuIndex));
+        }
+
+        [Test]
+        public void Emit_WithoutAttribute_NoSquareBrackets()
+        {
+            var cls = ClassBuilder.Build(_emitter, "MyClass")
+                .Emit();
+
+            Assert.That(cls, Does.Not.Contain("["));
+            Assert.That(cls, Does.Not.Contain("]"));
+        }
     }
 }

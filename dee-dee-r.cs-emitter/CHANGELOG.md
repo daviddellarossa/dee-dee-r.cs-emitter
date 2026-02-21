@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.0.1-exp.6] - 2026-02-22
+
+### Added
+
+- `ClassBuilder.WithAttribute` — adds attribute declarations to classes, supporting both parameterless and parameterized attributes.
+- `StructBuilder.WithAttribute` — adds attribute declarations to structs, supporting both parameterless and parameterized attributes.
+- `FieldBuilder.WithAttribute` — adds attribute declarations to fields, supporting both parameterless and parameterized attributes.
+- `PropertyBuilder.WithAttribute` — adds attribute declarations to properties, supporting both parameterless and parameterized attributes.
+- `MethodBuilder.WithAttribute` — adds attribute declarations to methods, supporting both parameterless and parameterized attributes.
+
 ## [0.0.1-exp.5] - 2026-02-21
 
 ### Added

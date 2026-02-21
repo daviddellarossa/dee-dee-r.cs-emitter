@@ -655,5 +655,84 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.That(str, Does.Not.Contain("///"));
         }
+        
+        // -------------------------------------------------------------------------
+        // Attributes
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithAttribute_EmitsAttributeBeforeDeclaration()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithAttribute("Serializable")
+                .Emit();
+
+            var attributeIndex = structBuilder.IndexOf("[Serializable]");
+            var declarationIndex = structBuilder.IndexOf("public struct MyStruct");
+
+            Assert.That(attributeIndex, Is.LessThan(declarationIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttribute_ContainsAttribute()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithAttribute("Serializable")
+                .Emit();
+
+            Assert.That(structBuilder, Does.Contain("[Serializable]"));
+        }
+
+        [Test]
+        public void Emit_WithAttributeWithArguments_EmitsCorrectly()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithAttribute("StructLayout", attr => attr
+                    .WithArgument("LayoutKind.Sequential"))
+                .Emit();
+
+            Assert.That(structBuilder, Does.Contain("[StructLayout(LayoutKind.Sequential)]"));
+        }
+
+        [Test]
+        public void Emit_WithMultipleAttributes_EmitsAllInOrder()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithAttribute("Serializable")
+                .WithAttribute("StructLayout", attr => attr
+                    .WithArgument("LayoutKind.Sequential"))
+                .Emit();
+
+            var serializableIndex = structBuilder.IndexOf("[Serializable]");
+            var structLayoutIndex = structBuilder.IndexOf("[StructLayout(");
+
+            Assert.That(structBuilder, Does.Contain("[Serializable]"));
+            Assert.That(structBuilder, Does.Contain("[StructLayout(LayoutKind.Sequential)]"));
+            Assert.That(serializableIndex, Is.LessThan(structLayoutIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .WithAttribute("Serializable")
+                .WithXmlDoc(doc => doc.WithSummary("My struct."))
+                .Emit();
+
+            var attributeIndex = structBuilder.IndexOf("[Serializable]");
+            var xmlDocIndex = structBuilder.IndexOf("///");
+
+            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+        }
+
+        [Test]
+        public void Emit_WithoutAttribute_NoSquareBrackets()
+        {
+            var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
+                .Emit();
+
+            Assert.That(structBuilder, Does.Not.Contain("["));
+            Assert.That(structBuilder, Does.Not.Contain("]"));
+        }
     }
 }

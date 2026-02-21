@@ -181,6 +181,32 @@ cls.WithMethod("Reset", CsType.Void, out MethodBuilder resetMethod)
 
 ---
 
+### Attributes
+
+Add attributes to the class using `WithAttribute()`. Supports both parameterless and parameterized attributes.
+
+```csharp
+// Parameterless attribute
+cls.WithAttribute("Serializable")
+
+// Parameterized attribute
+cls.WithAttribute("ObsoleteAttribute", "\"Use NewClass instead\"")
+
+// Multiple attributes
+cls.WithAttribute("Serializable")
+   .WithAttribute("DebuggerDisplay", "\"Count = {Count}\"")
+```
+
+Generates:
+
+```csharp
+[Serializable]
+[DebuggerDisplay("Count = {Count}")]
+public class MyClass
+```
+
+---
+
 ### XML documentation
 
 ```csharp
@@ -240,6 +266,23 @@ FileBuilder.Build("Generated/Registry.cs")
 |---|---|
 | `WithReadOnlyModifier()` | `readonly` |
 | `WithPartialModifier()` | `partial` |
+
+### Attributes
+
+Add attributes to structs using `WithAttribute()`:
+
+```csharp
+s.WithAttribute("Serializable")
+ .WithAttribute("StructLayout", "LayoutKind.Sequential")
+```
+
+Generates:
+
+```csharp
+[Serializable]
+[StructLayout(LayoutKind.Sequential)]
+public struct Bounds2D
+```
 
 ### Example
 

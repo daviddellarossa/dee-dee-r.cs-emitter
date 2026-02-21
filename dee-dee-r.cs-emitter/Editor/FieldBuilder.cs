@@ -32,6 +32,7 @@ namespace DeeDeeR.CsEmitter
         private bool _isReadOnly;
         private string _defaultValue;
         private bool _isConst = false;
+        private readonly List<AttributeBuilder> _attributes = new();
         
         private XmlDocBuilder _xmlDoc;
 
@@ -119,6 +120,20 @@ namespace DeeDeeR.CsEmitter
             _defaultValue = defaultValue;
             return this;
         }
+        
+        /// <summary>
+        /// Adds an attribute to the declaration.
+        /// </summary>
+        /// <param name="attributeName">The attribute name without brackets.</param>
+        /// <param name="configure">An optional action to configure the attribute arguments.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public FieldBuilder WithAttribute(string attributeName, Action<AttributeBuilder> configure = null)
+        {
+            var builder = AttributeBuilder.Build(attributeName);
+            configure?.Invoke(builder);
+            _attributes.Add(builder);
+            return this;
+        }
 
         /// <summary>
         /// Emits the complete C# code for the field.
@@ -131,6 +146,9 @@ namespace DeeDeeR.CsEmitter
                     $"Field '{_fieldName}': const fields must have a default value.");
             
             var sb = new StringBuilder();
+            
+            foreach (var attribute in _attributes)
+                sb.Append(attribute.Emit(_indentEmitter));
             
             if (_xmlDoc != null)
                 sb.Append(_xmlDoc.Emit(_indentEmitter));

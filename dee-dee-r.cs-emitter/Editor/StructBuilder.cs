@@ -37,7 +37,8 @@ namespace DeeDeeR.CsEmitter
         private readonly List<PropertyBuilder> _properties = new ();
         private readonly List<MethodBuilder> _methods = new ();
         private readonly List<ConstructorBuilder> _constructors = new ();
-
+        private readonly List<AttributeBuilder> _attributes = new();
+        
         private XmlDocBuilder _xmlDoc;
 
         /// <summary>
@@ -325,6 +326,20 @@ namespace DeeDeeR.CsEmitter
             _fields.Add(fieldBuilder);
             return this;
         }
+        
+        /// <summary>
+        /// Adds an attribute to the declaration.
+        /// </summary>
+        /// <param name="attributeName">The attribute name without brackets.</param>
+        /// <param name="configure">An optional action to configure the attribute arguments.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public StructBuilder WithAttribute(string attributeName, Action<AttributeBuilder> configure = null)
+        {
+            var builder = AttributeBuilder.Build(attributeName);
+            configure?.Invoke(builder);
+            _attributes.Add(builder);
+            return this;
+        }
 
         /// <summary>
         /// Emits the complete C# code for the struct.
@@ -333,6 +348,9 @@ namespace DeeDeeR.CsEmitter
         public string Emit()
         {
             var sb = new StringBuilder();
+            
+            foreach (var attribute in _attributes)
+                sb.Append(attribute.Emit(_indentEmitter));
             
             if (_xmlDoc != null)
                 sb.Append(_xmlDoc.Emit(_indentEmitter));
