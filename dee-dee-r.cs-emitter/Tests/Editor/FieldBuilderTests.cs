@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 
@@ -222,6 +223,15 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.That(Normalize(field),
                 Is.EqualTo("public const int MaxCount = 100;"));
+        }
+        
+        [Test]
+        public void Emit_WithConstModifierAndNoDefaultValue_ThrowsInvalidOperationException()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier();
+
+            Assert.Throws<InvalidOperationException>(() => field.Emit());
         }
 
         // -------------------------------------------------------------------------
