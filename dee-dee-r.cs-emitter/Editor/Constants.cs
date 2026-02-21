@@ -7,6 +7,7 @@
         public const string Bool = "bool";
         public const string Break = "break";
         public const string Class = "class";
+        public const string Const = "const";
         public const string Continue = "continue";
         public const string Cref = "cref";
         public const string Delegate = "delegate";

@@ -144,6 +144,85 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.That(Normalize(field), Is.EqualTo("public static readonly Vector3 MyField;"));
         }
+        
+        // -------------------------------------------------------------------------
+        // Const modifier
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithConstModifier_EmitsConst()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
+                .Emit();
+
+            Assert.That(field, Does.Contain("const"));
+        }
+
+        [Test]
+        public void Emit_WithConstModifier_EmitsCorrectDeclaration()
+        {
+            var field = FieldBuilder.Build(_emitter, "ResourcePath", CsType.String)
+                .WithVisibility(Visibility.Private)
+                .WithConstModifier()
+                .WithDefaultValue("\"MessageBusProvider\"")
+                .Emit();
+
+            Assert.That(Normalize(field),
+                Is.EqualTo("private const string ResourcePath = \"MessageBusProvider\";"));
+        }
+
+        [Test]
+        public void Emit_WithConstModifier_DoesNotEmitStatic()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
+                .Emit();
+
+            Assert.That(field, Does.Not.Contain("static"));
+        }
+
+        [Test]
+        public void Emit_WithConstModifier_DoesNotEmitReadOnly()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier()
+                .WithReadOnly()
+                .WithDefaultValue("\"myValue\"")
+                .Emit();
+
+            Assert.That(field, Does.Not.Contain("readonly"));
+        }
+
+        [Test]
+        public void Emit_WithConstModifier_ConstAppearsAfterVisibility()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithVisibility(Visibility.Public)
+                .WithConstModifier()
+                .Emit();
+
+            var declaration = Normalize(field);
+            var publicIndex = declaration.IndexOf("public");
+            var constIndex = declaration.IndexOf("const");
+
+            Assert.That(publicIndex, Is.LessThan(constIndex));
+        }
+
+        [Test]
+        public void Emit_WithConstModifierPublic_EmitsCorrectly()
+        {
+            var field = FieldBuilder.Build(_emitter, "MaxCount", CsType.Int)
+                .WithVisibility(Visibility.Public)
+                .WithConstModifier()
+                .WithDefaultValue("100")
+                .Emit();
+
+            Assert.That(Normalize(field),
+                Is.EqualTo("public const int MaxCount = 100;"));
+        }
 
         // -------------------------------------------------------------------------
         // Types
