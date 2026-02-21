@@ -190,11 +190,11 @@ Add attributes to the class using `WithAttribute()`. Supports both parameterless
 cls.WithAttribute("Serializable")
 
 // Parameterized attribute
-cls.WithAttribute("ObsoleteAttribute", "\"Use NewClass instead\"")
+cls.WithAttribute("ObsoleteAttribute", attr => attr.WithArgument("\"Use NewClass instead\""))
 
 // Multiple attributes
 cls.WithAttribute("Serializable")
-   .WithAttribute("DebuggerDisplay", "\"Count = {Count}\"")
+   .WithAttribute("DebuggerDisplay", attr => attr.WithArgument("\"Count = {Count}\""))
 ```
 
 Generates:
