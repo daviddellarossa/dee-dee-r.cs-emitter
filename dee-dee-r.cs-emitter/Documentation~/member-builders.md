@@ -22,8 +22,9 @@ Default: `Private`.
 |---|---|
 | `WithStaticModifier()` | `static` |
 | `WithReadOnly()` | `readonly` |
+| `WithConstModifier()` | `const` |
 
-Both accept an optional `bool` to toggle the modifier conditionally.
+These methods accept an optional `bool` to toggle the modifier conditionally.
 
 ### Default value
 
@@ -60,6 +61,12 @@ cls.WithField("Up", CsType.Of("Vector3"), f => f
 // private int _health = 100;
 cls.WithField("_health", CsType.Int, f => f
     .WithDefaultValue("100"))
+
+// public const int MaxRetries = 3;
+cls.WithField("MaxRetries", CsType.Int, f => f
+    .WithVisibility(Visibility.Public)
+    .WithConstModifier()
+    .WithDefaultValue("3"))
 ```
 
 ---

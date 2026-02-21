@@ -31,7 +31,8 @@ namespace DeeDeeR.CsEmitter
         private bool _isStatic;
         private bool _isReadOnly;
         private string _defaultValue;
-
+        private bool _isConst = false;
+        
         private XmlDocBuilder _xmlDoc;
 
         /// <summary>
@@ -84,6 +85,18 @@ namespace DeeDeeR.CsEmitter
             _isStatic = isStatic;
             return this;
         }
+        
+        /// <summary>
+        /// Sets the const modifier for the field. Implies static.
+        /// </summary>
+        /// <param name="isConst">True to make the field const; otherwise, false.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public FieldBuilder WithConstModifier(bool isConst = true)
+        {
+            _isConst = isConst;
+            if (isConst) _isStatic = true;
+            return this;
+        }
 
         /// <summary>
         /// Sets the readonly modifier for the field.
@@ -134,8 +147,15 @@ namespace DeeDeeR.CsEmitter
 
             parts.Add(VisibilityToString(_visibility));
 
-            if (_isStatic) parts.Add(Constants.Static);
-            if (_isReadOnly) parts.Add(Constants.Readonly);
+            if (_isConst)
+            {
+                parts.Add(Constants.Const);
+            }
+            else
+            {
+                if (_isStatic) parts.Add(Constants.Static);
+                if (_isReadOnly) parts.Add(Constants.Readonly);
+            }
 
             return string.Join(" ", parts) + " ";
         }
