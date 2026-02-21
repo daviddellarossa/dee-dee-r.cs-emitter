@@ -213,6 +213,27 @@ body.Raw("_ = StartCoroutine(MyCoroutine());")
 
 ---
 
+## Formatting
+
+### `BlankLine()`
+
+Emits an empty line to visually separate logical sections of code.
+
+```csharp
+MethodBuilder.Build(_emitter, "Initialize", CsType.Void)
+    .WithBody(body => body
+        .If("_initialized", then => then.Return())
+        .Assign("_initialized", "true")
+        .BlankLine()
+        .DeclareLocal("scheduler", "GetComponent<FrameSchedulerBehaviour>() ?? gameObject.AddComponent<FrameSchedulerBehaviour>()")
+        .Assign("Scheduler", "scheduler")
+        .BlankLine()
+        .Call("InitializeGeneratedCategories"))
+    .Emit();
+```
+
+---
+
 ## Combining statements
 
 All `CodeBlockBuilder` methods chain, and nested bodies use the same `IndentEmitter`, so indentation is managed automatically.
