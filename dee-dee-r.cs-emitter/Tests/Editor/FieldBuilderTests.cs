@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 
@@ -202,6 +203,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
                 .WithVisibility(Visibility.Public)
                 .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
                 .Emit();
 
             var declaration = Normalize(field);
@@ -223,7 +225,53 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             Assert.That(Normalize(field),
                 Is.EqualTo("public const int MaxCount = 100;"));
         }
+        
+        [Test]
+        public void Emit_WithConstModifierAndNoDefaultValue_ThrowsInvalidOperationException()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier();
 
+            Assert.Throws<InvalidOperationException>(() => field.Emit());
+        }
+
+        [Test]
+        public void Emit_WithConstModifierAndEmptyDefaultValue_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                    .WithConstModifier()
+                    .WithDefaultValue(string.Empty));
+        }
+
+        [Test]
+        public void Emit_WithConstModifierAndWhitespaceDefaultValue_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                    .WithConstModifier()
+                    .WithDefaultValue("   "));
+        }
+        
+        [Test]
+        public void Emit_WithConstModifierAndEmptyDefaultValue_ThrowsInvalidOperationException()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier()
+                .WithDefaultValue(string.Empty);
+
+            Assert.Throws<InvalidOperationException>(() => field.Emit());
+        }
+
+        [Test]
+        public void Emit_WithConstModifierAndWhitespaceDefaultValue_ThrowsInvalidOperationException()
+        {
+            var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                .WithConstModifier()
+                .WithDefaultValue("   ");
+
+            Assert.Throws<InvalidOperationException>(() => field.Emit());
+        }
         // -------------------------------------------------------------------------
         // Types
         // -------------------------------------------------------------------------

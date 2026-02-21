@@ -126,6 +126,10 @@ namespace DeeDeeR.CsEmitter
         /// <returns>A string containing the generated C# field code.</returns>
         public string Emit()
         {
+            if (_isConst && string.IsNullOrWhiteSpace(_defaultValue))
+                throw new InvalidOperationException(
+                    $"Field '{_fieldName}': const fields must have a default value.");
+            
             var sb = new StringBuilder();
             
             if (_xmlDoc != null)
