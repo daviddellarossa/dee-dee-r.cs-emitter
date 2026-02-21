@@ -1,7 +1,7 @@
 {
 	"name": "dee-dee-r.cs-emitter",
 	"displayName": "C# Emitter",
-	"version": "0.0.1-exp.2",
+	"version": "0.0.1-exp.3",
 	"unity": "6000.3",
 	"description": "A fluent builder library for generating C# source code files, classes, methods, properties, fields, and XML documentation.",
 	"dependencies": {
