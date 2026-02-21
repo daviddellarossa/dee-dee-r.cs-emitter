@@ -154,6 +154,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         {
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
                 .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
                 .Emit();
 
             Assert.That(field, Does.Contain("const"));
@@ -177,6 +178,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         {
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
                 .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
                 .Emit();
 
             Assert.That(field, Does.Not.Contain("static"));
@@ -188,6 +190,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
                 .WithConstModifier()
                 .WithReadOnly()
+                .WithDefaultValue("\"myValue\"")
                 .Emit();
 
             Assert.That(field, Does.Not.Contain("readonly"));
