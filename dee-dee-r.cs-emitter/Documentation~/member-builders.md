@@ -333,8 +333,8 @@ Omit `WithBody` together with `WithAbstractModifier()` or `WithPartialModifier()
 ### Attributes
 
 ```csharp
-m.WithAttribute("Obsolete", "\"Use NewMethod instead\"")
-m.WithAttribute("MethodImpl", "MethodImplOptions.AggressiveInlining")
+m.WithAttribute("Obsolete", attr => attr.WithArgument("\"Use NewMethod instead\""))
+m.WithAttribute("MethodImpl", attr => attr.WithArgument("MethodImplOptions.AggressiveInlining"))
 ```
 
 ### XML documentation
