@@ -204,6 +204,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
                 .WithVisibility(Visibility.Public)
                 .WithConstModifier()
                 .WithDefaultValue("\"myValue\"")
+
                 .Emit();
 
             var declaration = Normalize(field);
