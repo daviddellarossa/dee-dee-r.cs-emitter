@@ -58,7 +58,7 @@ namespace DeeDeeR.CsEmitter
     {
         private readonly IndentEmitter _indentEmitter;
         private readonly string _className;
-        private string _baseClass = null;
+        private string _baseClass;
         private Visibility _visibility = Visibility.Public;
         private bool _isStatic;
         private bool _isSealed;
