@@ -26,6 +26,7 @@ Default: `Private`.
 
 These methods accept an optional `bool` to toggle the modifier conditionally.
 
+Note: const fields must be initialized with a value using `WithDefaultValue()`.
 ### Default value
 
 ```csharp
