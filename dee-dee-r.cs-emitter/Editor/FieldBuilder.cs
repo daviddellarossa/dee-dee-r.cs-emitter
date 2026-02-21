@@ -87,7 +87,7 @@ namespace DeeDeeR.CsEmitter
         }
         
         /// <summary>
-        /// Sets the const modifier for the field. Implies static.
+        /// Sets the const modifier for the field. Const fields are implicitly static in C#.
         /// </summary>
         /// <param name="isConst">True to make the field const; otherwise, false.</param>
         /// <returns>This builder instance for method chaining.</returns>
