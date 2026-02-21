@@ -213,12 +213,11 @@ namespace DeeDeeR.CsEmitter
                     $"Property '{_propertyName}': cannot combine an expression body with a getter or setter.");
             var sb = new StringBuilder();
 
-            foreach (var attribute in _attributes)
-                sb.Append(attribute.Emit(_indentEmitter));
-            
             if (_xmlDoc != null)
                 sb.Append(_xmlDoc.Emit(_indentEmitter));
 
+            foreach (var attribute in _attributes)
+                sb.Append(attribute.Emit(_indentEmitter));
             var isAutoProperty = _getter == null && _setter == null && _expressionBody == null;
             var isExpressionProperty = _expressionBody != null;
 
