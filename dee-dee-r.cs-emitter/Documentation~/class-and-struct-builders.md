@@ -273,7 +273,7 @@ Add attributes to structs using `WithAttribute()`:
 
 ```csharp
 s.WithAttribute("Serializable")
- .WithAttribute("StructLayout", "LayoutKind.Sequential")
+ .WithAttribute("StructLayout", attr => attr.WithArgument("LayoutKind.Sequential"))
 ```
 
 Generates:
