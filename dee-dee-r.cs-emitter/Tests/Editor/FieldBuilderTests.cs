@@ -203,6 +203,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var field = FieldBuilder.Build(_emitter, "MyConst", CsType.String)
                 .WithVisibility(Visibility.Public)
                 .WithConstModifier()
+                .WithDefaultValue("\"myValue\"")
                 .Emit();
 
             var declaration = Normalize(field);
