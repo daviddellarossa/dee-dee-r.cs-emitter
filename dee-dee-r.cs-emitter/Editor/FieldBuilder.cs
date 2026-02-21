@@ -147,11 +147,11 @@ namespace DeeDeeR.CsEmitter
             
             var sb = new StringBuilder();
             
-            foreach (var attribute in _attributes)
-                sb.Append(attribute.Emit(_indentEmitter));
-            
             if (_xmlDoc != null)
                 sb.Append(_xmlDoc.Emit(_indentEmitter));
+            
+            foreach (var attribute in _attributes)
+                sb.Append(attribute.Emit(_indentEmitter));
 
             var modifiers = BuildModifiers();
             var declaration = _defaultValue != null
