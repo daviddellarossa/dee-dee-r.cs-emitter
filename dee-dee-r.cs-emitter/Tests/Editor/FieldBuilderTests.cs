@@ -272,7 +272,6 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.Throws<InvalidOperationException>(() => field.Emit());
         }
-        
         // -------------------------------------------------------------------------
         // Types
         // -------------------------------------------------------------------------
