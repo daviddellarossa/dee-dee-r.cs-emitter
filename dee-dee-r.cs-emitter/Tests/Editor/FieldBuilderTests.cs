@@ -236,6 +236,23 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             Assert.Throws<InvalidOperationException>(() => field.Emit());
         }
 
+        [Test]
+        public void Emit_WithConstModifierAndEmptyDefaultValue_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                    .WithConstModifier()
+                    .WithDefaultValue(string.Empty));
+        }
+
+        [Test]
+        public void Emit_WithConstModifierAndWhitespaceDefaultValue_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                FieldBuilder.Build(_emitter, "MyConst", CsType.String)
+                    .WithConstModifier()
+                    .WithDefaultValue("   "));
+        }
         // -------------------------------------------------------------------------
         // Types
         // -------------------------------------------------------------------------
