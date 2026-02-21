@@ -40,7 +40,7 @@ The value is emitted as-is after `=`.
 
 ```csharp
 f.WithAttribute("NonSerialized")
-f.WithAttribute("JsonProperty", "\"customName\"")
+f.WithAttribute("JsonProperty", attr => attr.WithArgument("\"customName\""))
 ```
 
 ### XML documentation
