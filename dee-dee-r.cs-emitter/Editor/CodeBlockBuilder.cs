@@ -215,6 +215,16 @@ namespace DeeDeeR.CsEmitter
             _statements.Add(new RawStatement(line));
             return this;
         }
+        
+        /// <summary>
+        /// Emits a blank line in the code block for formatting purposes.
+        /// </summary>
+        /// <returns>This builder instance for method chaining.</returns>
+        public CodeBlockBuilder BlankLine()
+        {
+            _statements.Add(new RawStatement(string.Empty));
+            return this;
+        }
 
         /// <summary>
         /// Emits the complete code block as a string.

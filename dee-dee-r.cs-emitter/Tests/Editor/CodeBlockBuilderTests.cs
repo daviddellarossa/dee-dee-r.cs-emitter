@@ -473,6 +473,92 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             block.Emit();
             Assert.That(_emitter.Get(), Is.EqualTo(expectedIndent));
         }
+        
+        // -------------------------------------------------------------------------
+        // BlankLine
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void BlankLine_EmitsEmptyLine()
+        {
+            var block = new CodeBlockBuilder(_emitter);
+            block.BlankLine();
+
+            Assert.That(block.Emit(), Does.Contain("\n"));
+        }
+
+        [Test]
+        public void BlankLine_BetweenStatements_EmitsEmptyLineBetweenThem()
+        {
+            var block = new CodeBlockBuilder(_emitter);
+            block
+                .Assign("_a", "1")
+                .BlankLine()
+                .Assign("_b", "2");
+
+            var output = block.Emit();
+            var aIndex = output.IndexOf("_a = 1;");
+            var bIndex = output.IndexOf("_b = 2;");
+            var blankIndex = output.IndexOf("\n\n", aIndex);
+
+            Assert.That(blankIndex, Is.GreaterThan(aIndex));
+            Assert.That(blankIndex, Is.LessThan(bIndex));
+        }
+
+        [Test]
+        public void BlankLine_MultipleBlankLines_EmitsMultipleEmptyLines()
+        {
+            var block = new CodeBlockBuilder(_emitter);
+            block
+                .Assign("_a", "1")
+                .BlankLine()
+                .BlankLine()
+                .Assign("_b", "2");
+
+            var output = block.Emit();
+            var aIndex = output.IndexOf("_a = 1;");
+            var bIndex = output.IndexOf("_b = 2;");
+
+            var contentBetween = output.Substring(aIndex, bIndex - aIndex);
+            var emptyLineCount = contentBetween.Split('\n')
+                .Count(l => string.IsNullOrWhiteSpace(l));
+
+            Assert.That(emptyLineCount, Is.GreaterThanOrEqualTo(2));
+        }
+
+        [Test]
+        public void BlankLine_DoesNotAffectStatementContent()
+        {
+            var block = new CodeBlockBuilder(_emitter);
+            block
+                .Assign("_a", "1")
+                .BlankLine()
+                .Assign("_b", "2");
+
+            var output = block.Emit();
+            Assert.That(output, Does.Contain("_a = 1;"));
+            Assert.That(output, Does.Contain("_b = 2;"));
+        }
+
+        [Test]
+        public void BlankLine_WithIndent_EmitsBlankLineWithoutIndentation()
+        {
+            _emitter.Push();
+            var block = new CodeBlockBuilder(_emitter);
+            block
+                .Assign("_a", "1")
+                .BlankLine()
+                .Assign("_b", "2");
+
+            var output = block.Emit();
+            var lines = output.Split('\n');
+            var blankLine = lines.SkipWhile(l => !l.Contains("_a = 1;"))
+                .Skip(1)
+                .First();
+
+            Assert.That(blankLine.TrimEnd(), Is.EqualTo(string.Empty));
+        }
+                
 
         // -------------------------------------------------------------------------
         // Indentation
