@@ -214,6 +214,25 @@ c.WithXmlDoc(doc => doc
     .WithParam("logger", "The logger to use."))
 ```
 
+### Conditional constructor with WithConstructorIf
+
+Use `WithConstructorIf()` on `StructBuilder` to conditionally add a constructor based on a boolean condition. This is particularly useful when generating code from models where a constructor may only be needed in certain cases (e.g., when parameters exist).
+
+```csharp
+structBuilder
+    .WithConstructorIf(
+        messageModel.MessageArgs.Parameters.Count > 0,
+        ctor => ctor
+            .WithParameters(messageModel.MessageArgs.Parameters,
+                parameter => CsType.Of(parameter.TypeModel.Type.FullName),
+                parameter => parameter.ToLocalVariableName())
+            .WithBody(body =>
+            {
+                foreach (var parameter in messageModel.MessageArgs.Parameters)
+                    body.Assign(parameter.ToPropertyName(), parameter.ToLocalVariableName());
+            }))
+```
+
 ### Example
 
 ```csharp

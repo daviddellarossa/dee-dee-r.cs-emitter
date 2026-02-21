@@ -23,6 +23,8 @@ namespace DeeDeeR.CsEmitter
         private string _baseCall;
         private string _thisCall;
         private ConstructorBodyBuilder _body;
+        
+        public bool HasParameters => _parameters.Count > 0;
 
         private XmlDocBuilder _xmlDoc;
 
