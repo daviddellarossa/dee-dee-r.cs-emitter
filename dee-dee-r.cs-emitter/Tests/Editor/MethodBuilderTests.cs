@@ -500,5 +500,84 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.That(method, Does.Not.Contain("///"));
         }
+        
+        // -------------------------------------------------------------------------
+        // Attributes
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithAttribute_EmitsAttributeBeforeSignature()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .WithAttribute("Obsolete")
+                .Emit();
+
+            var attributeIndex = method.IndexOf("[Obsolete]");
+            var signatureIndex = method.IndexOf("public void MyMethod()");
+
+            Assert.That(attributeIndex, Is.LessThan(signatureIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttribute_ContainsAttribute()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .WithAttribute("Obsolete")
+                .Emit();
+
+            Assert.That(method, Does.Contain("[Obsolete]"));
+        }
+
+        [Test]
+        public void Emit_WithAttributeWithArguments_EmitsCorrectly()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .WithAttribute("Obsolete", attr => attr
+                    .WithArgument("\"Use NewMethod instead.\""))
+                .Emit();
+
+            Assert.That(method, Does.Contain("[Obsolete(\"Use NewMethod instead.\")]"));
+        }
+
+        [Test]
+        public void Emit_WithMultipleAttributes_EmitsAllInOrder()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .WithAttribute("Obsolete")
+                .WithAttribute("ContextMenu", attr => attr
+                    .WithArgument("\"Run MyMethod\""))
+                .Emit();
+
+            var obsoleteIndex = method.IndexOf("[Obsolete]");
+            var contextMenuIndex = method.IndexOf("[ContextMenu(");
+
+            Assert.That(method, Does.Contain("[Obsolete]"));
+            Assert.That(method, Does.Contain("[ContextMenu(\"Run MyMethod\")]"));
+            Assert.That(obsoleteIndex, Is.LessThan(contextMenuIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .WithAttribute("Obsolete")
+                .WithXmlDoc(doc => doc.WithSummary("My method."))
+                .Emit();
+
+            var attributeIndex = method.IndexOf("[Obsolete]");
+            var xmlDocIndex = method.IndexOf("///");
+
+            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+        }
+
+        [Test]
+        public void Emit_WithoutAttribute_NoSquareBrackets()
+        {
+            var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
+                .Emit();
+
+            Assert.That(method, Does.Not.Contain("["));
+            Assert.That(method, Does.Not.Contain("]"));
+        }
     }
 }

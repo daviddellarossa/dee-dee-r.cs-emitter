@@ -439,5 +439,95 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.Throws<InvalidOperationException>(() => property.Emit());
         }
+        
+        // -------------------------------------------------------------------------
+        // Attributes
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithAttribute_EmitsAttributeBeforeDeclaration()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAttribute("field: SerializeField")
+                .WithAutoGetter()
+                .WithAutoSetter(Visibility.Private)
+                .Emit();
+
+            var attributeIndex = property.IndexOf("[field: SerializeField]");
+            var declarationIndex = property.IndexOf("public float MyProperty");
+
+            Assert.That(attributeIndex, Is.LessThan(declarationIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttribute_ContainsAttribute()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAttribute("field: SerializeField")
+                .WithAutoGetter()
+                .Emit();
+
+            Assert.That(property, Does.Contain("[field: SerializeField]"));
+        }
+
+        [Test]
+        public void Emit_WithAttributeWithArguments_EmitsCorrectly()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAttribute("Range", attr => attr
+                    .WithArgument("0f")
+                    .WithArgument("1f"))
+                .WithAutoGetter()
+                .WithAutoSetter(Visibility.Private)
+                .Emit();
+
+            Assert.That(property, Does.Contain("[Range(0f, 1f)]"));
+        }
+
+        [Test]
+        public void Emit_WithMultipleAttributes_EmitsAllInOrder()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAttribute("field: SerializeField")
+                .WithAttribute("Range", attr => attr
+                    .WithArgument("0f")
+                    .WithArgument("1f"))
+                .WithAutoGetter()
+                .WithAutoSetter(Visibility.Private)
+                .Emit();
+
+            var serializeIndex = property.IndexOf("[field: SerializeField]");
+            var rangeIndex = property.IndexOf("[Range(");
+
+            Assert.That(property, Does.Contain("[field: SerializeField]"));
+            Assert.That(property, Does.Contain("[Range(0f, 1f)]"));
+            Assert.That(serializeIndex, Is.LessThan(rangeIndex));
+        }
+
+        [Test]
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAttribute("field: SerializeField")
+                .WithXmlDoc(doc => doc.WithSummary("My property."))
+                .WithAutoGetter()
+                .Emit();
+
+            var attributeIndex = property.IndexOf("[field: SerializeField]");
+            var xmlDocIndex = property.IndexOf("///");
+
+            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+        }
+
+        [Test]
+        public void Emit_WithoutAttribute_NoSquareBrackets()
+        {
+            var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
+                .WithAutoGetter()
+                .Emit();
+
+            Assert.That(property, Does.Not.Contain("["));
+            Assert.That(property, Does.Not.Contain("]"));
+        }
     }
 }

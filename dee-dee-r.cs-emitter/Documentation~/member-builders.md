@@ -36,6 +36,13 @@ f.WithDefaultValue("new List<string>()")
 
 The value is emitted as-is after `=`.
 
+### Attributes
+
+```csharp
+f.WithAttribute("NonSerialized")
+f.WithAttribute("JsonProperty", attr => attr.WithArgument("\"customName\""))
+```
+
 ### XML documentation
 
 ```csharp
@@ -145,6 +152,13 @@ p.WithGetter(getter => getter.Return("_value"))
  .WithSetter(setter => setter.Assign("_value", "value"), Visibility.Protected)
 // get { return _value; }
 // protected set { _value = value; }
+```
+
+### Attributes
+
+```csharp
+p.WithAttribute("JsonIgnore")
+p.WithAttribute("Range", attr => attr.WithArgument("0").WithArgument("100"))
 ```
 
 ### XML documentation
@@ -315,6 +329,13 @@ m.WithBody(body => body
 ```
 
 Omit `WithBody` together with `WithAbstractModifier()` or `WithPartialModifier()` to emit a method with no body.
+
+### Attributes
+
+```csharp
+m.WithAttribute("Obsolete", attr => attr.WithArgument("\"Use NewMethod instead\""))
+m.WithAttribute("MethodImpl", attr => attr.WithArgument("MethodImplOptions.AggressiveInlining"))
+```
 
 ### XML documentation
 
