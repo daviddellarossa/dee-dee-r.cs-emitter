@@ -14,7 +14,7 @@ For package documentation, see [dee-dee-r.cs-emitter/README.md](dee-dee-r.cs-emi
 2. Click the **+** button in the top-left corner and select **Add package from git URL…**
 3. Enter the URL of this repository followed by the path to the package folder:
    ```
-   https://github.com/DeeDeeR/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter
+   https://github.com/daviddellarossa/dee-dee-r.cs-emitter.git?path=dee-dee-r.cs-emitter
    ```
 4. Click **Add**. Unity will fetch and import the package automatically.
 
