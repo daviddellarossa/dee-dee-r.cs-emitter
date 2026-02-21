@@ -158,7 +158,7 @@ p.WithGetter(getter => getter.Return("_value"))
 
 ```csharp
 p.WithAttribute("JsonIgnore")
-p.WithAttribute("Range", "0, 100")
+p.WithAttribute("Range", attr => attr.WithArgument("0").WithArgument("100"))
 ```
 
 ### XML documentation
