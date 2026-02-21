@@ -422,11 +422,11 @@ namespace DeeDeeR.CsEmitter
         {
             var sb = new StringBuilder();
             
-            foreach (var attribute in _attributes)
-                sb.Append(attribute.Emit(_indentEmitter));
-            
             if (_xmlDoc != null)
                 sb.Append(_xmlDoc.Emit(_indentEmitter));
+            
+            foreach (var attribute in _attributes)
+                sb.Append(attribute.Emit(_indentEmitter));
 
             // Class declaration
             sb.AppendLine($"{_indentEmitter.Get()}{BuildDeclaration()}");
