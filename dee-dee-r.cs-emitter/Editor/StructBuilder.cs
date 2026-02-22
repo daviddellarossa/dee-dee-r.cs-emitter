@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DeeDeeR.CsEmitter;
 
 namespace DeeDeeR.CsEmitter
 {
@@ -33,11 +34,8 @@ namespace DeeDeeR.CsEmitter
         private bool _isPartial;
         private readonly List<string> _typeParameters = new ();
         private readonly List<(string TypeParam, string Constraint)> _typeConstraints = new ();
-        private readonly List<FieldBuilder> _fields = new ();
-        private readonly List<PropertyBuilder> _properties = new ();
-        private readonly List<MethodBuilder> _methods = new ();
-        private readonly List<ConstructorBuilder> _constructors = new ();
         private readonly List<AttributeBuilder> _attributes = new();
+        private readonly List<IClassMember> _members = new();
         
         private XmlDocBuilder _xmlDoc;
 
@@ -135,7 +133,7 @@ namespace DeeDeeR.CsEmitter
         {
             var builder = FieldBuilder.Build(_indentEmitter, fieldName, fieldType);
             configure?.Invoke(builder);
-            _fields.Add(builder);
+            _members.Add(new FieldMember(builder));
             return this;
         }
 
@@ -150,7 +148,7 @@ namespace DeeDeeR.CsEmitter
         {
             var builder = PropertyBuilder.Build(_indentEmitter, propertyName, propertyType);
             configure?.Invoke(builder);
-            _properties.Add(builder);
+            _members.Add(new PropertyMember(builder));
             return this;
         }
 
@@ -165,7 +163,7 @@ namespace DeeDeeR.CsEmitter
         {
             var builder = MethodBuilder.Build(_indentEmitter, methodName, returnType);
             configure?.Invoke(builder);
-            _methods.Add(builder);
+            _members.Add(new MethodMember(builder));
             return this;
         }
 
@@ -178,7 +176,7 @@ namespace DeeDeeR.CsEmitter
         {
             var builder = ConstructorBuilder.Build(_indentEmitter, _structName);
             configure?.Invoke(builder);
-            _constructors.Add(builder);
+            _members.Add(new ConstructorMember(builder));
             return this;
         }
         
@@ -223,7 +221,7 @@ namespace DeeDeeR.CsEmitter
         {
             constructorBuilder = ConstructorBuilder.Build(_indentEmitter, _structName);
             configure?.Invoke(constructorBuilder);
-            _constructors.Add(constructorBuilder);
+            _members.Add(new ConstructorMember(constructorBuilder));
             return this;
         }
         
@@ -248,7 +246,7 @@ namespace DeeDeeR.CsEmitter
                 var type = typeSelector(item);
                 var builder = FieldBuilder.Build(_indentEmitter, name, type);
                 configure?.Invoke(item, builder);
-                _fields.Add(builder);
+                _members.Add(new FieldMember(builder));
             }
             return this;
         }
@@ -274,7 +272,7 @@ namespace DeeDeeR.CsEmitter
                 var type = typeSelector(item);
                 var builder = PropertyBuilder.Build(_indentEmitter, name, type);
                 configure?.Invoke(item, builder);
-                _properties.Add(builder);
+                _members.Add(new PropertyMember(builder));
             }
             return this;
         }
@@ -291,7 +289,7 @@ namespace DeeDeeR.CsEmitter
         {
             methodBuilder = MethodBuilder.Build(_indentEmitter, methodName, returnType);
             configure?.Invoke(methodBuilder);
-            _methods.Add(methodBuilder);
+            _members.Add(new MethodMember(methodBuilder));
             return this;
         }
 
@@ -307,7 +305,7 @@ namespace DeeDeeR.CsEmitter
         {
             propertyBuilder = PropertyBuilder.Build(_indentEmitter, propertyName, propertyType);
             configure?.Invoke(propertyBuilder);
-            _properties.Add(propertyBuilder);
+            _members.Add(new PropertyMember(propertyBuilder));
             return this;
         }
 
@@ -323,7 +321,7 @@ namespace DeeDeeR.CsEmitter
         {
             fieldBuilder = FieldBuilder.Build(_indentEmitter, fieldName, fieldType);
             configure?.Invoke(fieldBuilder);
-            _fields.Add(fieldBuilder);
+            _members.Add(new FieldMember(fieldBuilder));
             return this;
         }
         
@@ -340,6 +338,18 @@ namespace DeeDeeR.CsEmitter
             _attributes.Add(builder);
             return this;
         }
+        
+        /// <summary>
+        /// Emits a raw line directly into the class body without any processing or indentation adjustment.
+        /// Primarily intended for preprocessor directives such as #if, #endif, #region, and #endregion.
+        /// </summary>
+        /// <param name="line">The raw line to emit.</param>
+        /// <returns>This builder instance for method chaining.</returns>
+        public StructBuilder WithRaw(string line)
+        {
+            _members.Add(new RawMember(line));
+            return this;
+        }
 
         /// <summary>
         /// Emits the complete C# code for the struct.
@@ -347,6 +357,15 @@ namespace DeeDeeR.CsEmitter
         /// <returns>A string containing the generated C# struct code.</returns>
         public string Emit()
         {
+            // Validate constructors before emitting
+            foreach (var member in _members)
+            {
+                if (member is ConstructorMember ctor && !ctor.HasParameters)
+                    throw new InvalidOperationException(
+                        $"Struct '{_structName}': explicit constructors must have at least one parameter. " +
+                        $"Remove the constructor or add parameters to it.");
+            }
+            
             var sb = new StringBuilder();
             
             if (_xmlDoc != null)
@@ -358,43 +377,10 @@ namespace DeeDeeR.CsEmitter
             sb.AppendLine($"{_indentEmitter.Get()}{BuildDeclaration()}");
             sb.AppendLine($"{_indentEmitter.Get()}{{");
             _indentEmitter.Push();
-
-            if (_fields.Count > 0)
-            {
-                foreach (var field in _fields)
-                    sb.Append(field.Emit());
-                sb.AppendLine();
-            }
-
-            if (_properties.Count > 0)
-            {
-                foreach (var property in _properties)
-                    sb.Append(property.Emit());
-                sb.AppendLine();
-            }
             
-            if (_constructors.Count > 0)
-            {
-                foreach (var constructor in _constructors)
-                {
-                    if (!constructor.HasParameters)
-                        throw new InvalidOperationException(
-                            $"Struct '{_structName}': explicit constructors must have at least one parameter. Remove the constructor or add parameters to it.");
-
-                    sb.Append(constructor.Emit());
-                }
-                sb.AppendLine();
-            }
-
-            if (_methods.Count > 0)
-            {
-                foreach (var method in _methods)
-                {
-                    sb.Append(method.Emit());
-                    sb.AppendLine();
-                }
-            }
-
+            foreach (var member in _members)
+                sb.Append(member.Emit());
+            
             _indentEmitter.Pop();
             sb.AppendLine($"{_indentEmitter.Get()}}}");
 

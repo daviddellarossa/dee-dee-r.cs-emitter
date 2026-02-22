@@ -302,7 +302,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
 
         [Test]
-        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsAfterXmlDoc()
         {
             var field = FieldBuilder.Build(_emitter, "_value", CsType.Float)
                 .WithAttribute("SerializeField")
@@ -312,7 +312,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var attributeIndex = field.IndexOf("[SerializeField]");
             var xmlDocIndex = field.IndexOf("///");
 
-            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+            Assert.That(attributeIndex, Is.GreaterThan(xmlDocIndex));
         }
 
         [Test]

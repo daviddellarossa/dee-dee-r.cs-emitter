@@ -527,56 +527,6 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
 
         // -------------------------------------------------------------------------
-        // Member ordering
-        // -------------------------------------------------------------------------
-
-        [Test]
-        public void Emit_MemberOrdering_FieldsBeforeProperties()
-        {
-            var str = StructBuilder.Build(_emitter, "MyStruct")
-                .WithProperty("Scale", CsType.Float, p => p.WithAutoGetter())
-                .WithField("_scale", CsType.Float)
-                .Emit();
-
-            var fieldIndex = str.IndexOf("float _scale;");
-            var propertyIndex = str.IndexOf("float Scale");
-
-            Assert.That(fieldIndex, Is.LessThan(propertyIndex));
-        }
-
-        [Test]
-        public void Emit_MemberOrdering_PropertiesBeforeConstructors()
-        {
-            var str = StructBuilder.Build(_emitter, "MyStruct")
-                .WithConstructor(c => c
-                    .WithParameter(CsType.Float, "scale")
-                    .WithBody(body => body.Assign("Scale", "scale")))
-                .WithProperty("Scale", CsType.Float, p => p.WithAutoGetter())
-                .Emit();
-
-            var propertyIndex = str.IndexOf("float Scale");
-            var ctorIndex = str.IndexOf("public MyStruct(");
-
-            Assert.That(propertyIndex, Is.LessThan(ctorIndex));
-        }
-
-        [Test]
-        public void Emit_MemberOrdering_ConstructorsBeforeMethods()
-        {
-            var str = StructBuilder.Build(_emitter, "MyStruct")
-                .WithMethod("Normalize", CsType.Of("Vector3"))
-                .WithConstructor(c => c
-                    .WithParameter(CsType.Of("Vector3"), "position")
-                    .WithBody(body => body.Assign("Position", "position")))
-                .Emit();
-
-            var ctorIndex = str.IndexOf("public MyStruct(");
-            var methodIndex = str.IndexOf("Vector3 Normalize()");
-
-            Assert.That(ctorIndex, Is.LessThan(methodIndex));
-        }
-
-        // -------------------------------------------------------------------------
         // Indentation
         // -------------------------------------------------------------------------
 
@@ -712,7 +662,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
 
         [Test]
-        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsAfterXmlDoc()
         {
             var structBuilder = StructBuilder.Build(_emitter, "MyStruct")
                 .WithAttribute("Serializable")
@@ -722,7 +672,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var attributeIndex = structBuilder.IndexOf("[Serializable]");
             var xmlDocIndex = structBuilder.IndexOf("///");
 
-            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+            Assert.That(attributeIndex, Is.GreaterThan(xmlDocIndex));
         }
 
         [Test]
@@ -733,6 +683,151 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
 
             Assert.That(structBuilder, Does.Not.Contain("["));
             Assert.That(structBuilder, Does.Not.Contain("]"));
+        }
+        
+        // -------------------------------------------------------------------------
+        // Declaration order
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_MembersEmitInDeclarationOrder_FieldAfterMethod()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithMethod("MyMethod", CsType.Void)
+                .WithField("_myField", CsType.Int)
+                .Emit();
+
+            var methodIndex = cls.IndexOf("void MyMethod()");
+            var fieldIndex = cls.IndexOf("int _myField;");
+
+            Assert.That(methodIndex, Is.LessThan(fieldIndex));
+        }
+
+        [Test]
+        public void Emit_MembersEmitInDeclarationOrder_PropertyBeforeField()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithProperty("MyProperty", CsType.Int, p => p.WithAutoGetter())
+                .WithField("_myField", CsType.Int)
+                .Emit();
+
+            var propertyIndex = cls.IndexOf("int MyProperty");
+            var fieldIndex = cls.IndexOf("int _myField;");
+
+            Assert.That(propertyIndex, Is.LessThan(fieldIndex));
+        }
+
+        [Test]
+        public void Emit_MembersEmitInDeclarationOrder_ConstructorBeforeField()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithConstructor()
+                .WithField("_myField", CsType.Int)
+                .Emit();
+
+            var ctorIndex = cls.IndexOf("public MyStruct()");
+            var fieldIndex = cls.IndexOf("int _myField;");
+
+            Assert.That(ctorIndex, Is.LessThan(fieldIndex));
+        }
+
+        [Test]
+        public void Emit_MembersEmitInDeclarationOrder_InterleavedMixedTypes()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithField("_fieldA", CsType.Int)
+                .WithMethod("MethodA", CsType.Void)
+                .WithField("_fieldB", CsType.String)
+                .WithMethod("MethodB", CsType.Void)
+                .Emit();
+
+            var fieldAIndex = cls.IndexOf("int _fieldA;");
+            var methodAIndex = cls.IndexOf("void MethodA()");
+            var fieldBIndex = cls.IndexOf("string _fieldB;");
+            var methodBIndex = cls.IndexOf("void MethodB()");
+
+            Assert.That(fieldAIndex, Is.LessThan(methodAIndex));
+            Assert.That(methodAIndex, Is.LessThan(fieldBIndex));
+            Assert.That(fieldBIndex, Is.LessThan(methodBIndex));
+        }
+
+        // -------------------------------------------------------------------------
+        // WithRaw — ordering
+        // -------------------------------------------------------------------------
+
+        [Test]
+        public void Emit_WithRaw_ContainsRawLine()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithRaw("#if UNITY_EDITOR")
+                .Emit();
+
+            Assert.That(cls, Does.Contain("#if UNITY_EDITOR"));
+        }
+
+        [Test]
+        public void Emit_WithRaw_AppearsInDeclaredPosition()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithMethod("MethodA", CsType.Void)
+                .WithRaw("#if UNITY_EDITOR")
+                .WithMethod("MethodB", CsType.Void)
+                .WithRaw("#endif")
+                .Emit();
+
+            var methodAIndex = cls.IndexOf("void MethodA()");
+            var ifIndex = cls.IndexOf("#if UNITY_EDITOR");
+            var methodBIndex = cls.IndexOf("void MethodB()");
+            var endifIndex = cls.IndexOf("#endif");
+
+            Assert.That(methodAIndex, Is.LessThan(ifIndex));
+            Assert.That(ifIndex, Is.LessThan(methodBIndex));
+            Assert.That(methodBIndex, Is.LessThan(endifIndex));
+        }
+
+        [Test]
+        public void Emit_WithRaw_PreprocessorDirective_WrapsMethod()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithRaw("#if UNITY_EDITOR")
+                .WithMethod("OnDisable", CsType.Void, m => m
+                    .WithVisibility(Visibility.Private))
+                .WithRaw("#endif")
+                .Emit();
+
+            var ifIndex = cls.IndexOf("#if UNITY_EDITOR");
+            var methodIndex = cls.IndexOf("void OnDisable()");
+            var endifIndex = cls.IndexOf("#endif");
+
+            Assert.That(ifIndex, Is.LessThan(methodIndex));
+            Assert.That(methodIndex, Is.LessThan(endifIndex));
+        }
+
+        [Test]
+        public void Emit_WithRaw_MultipleDirectives_EmitsAllInOrder()
+        {
+            var cls = StructBuilder.Build(_emitter, "MyStruct")
+                .WithRaw("#if UNITY_EDITOR")
+                .WithRaw("#pragma warning disable 0414")
+                .WithMethod("OnDisable", CsType.Void, m => m
+                    .WithVisibility(Visibility.Private))
+                .WithRaw("#pragma warning restore 0414")
+                .WithRaw("#endif")
+                .Emit();
+
+            Assert.That(cls, Does.Contain("#if UNITY_EDITOR"));
+            Assert.That(cls, Does.Contain("#pragma warning disable 0414"));
+            Assert.That(cls, Does.Contain("#pragma warning restore 0414"));
+            Assert.That(cls, Does.Contain("#endif"));
+
+            var ifIndex = cls.IndexOf("#if UNITY_EDITOR");
+            var disableIndex = cls.IndexOf("#pragma warning disable 0414");
+            var restoreIndex = cls.IndexOf("#pragma warning restore 0414");
+            var endifIndex = cls.IndexOf("#endif");
+
+            Assert.That(ifIndex, Is.LessThan(disableIndex));
+            Assert.That(disableIndex, Is.LessThan(restoreIndex));
+            Assert.That(restoreIndex, Is.LessThan(endifIndex));
         }
     }
 }

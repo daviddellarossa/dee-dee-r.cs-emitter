@@ -7,11 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `WithRaw(string line)` on `ClassBuilder` and `StructBuilder` — Adds support for emitting raw lines directly into the class or struct body without any processing or indentation adjustment. Primarily intended for preprocessor directives but can be used for any content the emitter does not natively support.
+- Declaration-order member emission on `ClassBuilder` and `StructBuilder` — Members are now emitted in the order they are declared in the fluent chain, rather than in a fixed fields → properties → constructors → methods order. This is a **breaking change** for consumers relying on the previous fixed ordering.
 - `ClassBuilder.WithAttribute` — adds attribute declarations to classes, supporting both parameterless and parameterized attributes.
 - `StructBuilder.WithAttribute` — adds attribute declarations to structs, supporting both parameterless and parameterized attributes.
 - `FieldBuilder.WithAttribute` — adds attribute declarations to fields, supporting both parameterless and parameterized attributes.
 - `PropertyBuilder.WithAttribute` — adds attribute declarations to properties, supporting both parameterless and parameterized attributes.
 - `MethodBuilder.WithAttribute` — adds attribute declarations to methods, supporting both parameterless and parameterized attributes.
+- Documentation for `WithConstructorIf` usage added to `member-builders.md` with practical examples showing conditional constructor generation based on parameter collections.
+- Documentation and code examples for `WithAttribute` added to `class-and-struct-builders.md` and `member-builders.md`, demonstrating both parameterless and parameterized attribute usage across all supported builder types.
+
+### Changed
+
+- `ClassBuilder` and `StructBuilder` now use a unified internal member list (`List<IClassMember>`) instead of separate lists per member type. This enables interleaving of any member type with raw lines and preserves declaration order.
+- The fixed member ordering (fields → properties → constructors → methods) has been removed. Members now emit in declaration order.
+
+### Breaking Changes
+
+- Code that relied on `ClassBuilder` or `StructBuilder` emitting members in a fixed order (fields first, then properties, then constructors, then methods) will now emit members in declaration order instead. Update fluent chains to declare members in the desired output order.
 
 ## [0.0.1-exp.5] - 2026-02-21
 
