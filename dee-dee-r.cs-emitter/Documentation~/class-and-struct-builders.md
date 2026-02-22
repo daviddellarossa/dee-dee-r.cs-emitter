@@ -237,7 +237,7 @@ public class MyClass
 }
 ```
 
-**Note**: Raw text is emitted at the position it's added relative to other members, regardless of the normal member ordering (fields, properties, constructors, methods). Use this feature carefully to maintain readable generated code.
+**Note**: Members, including raw text added with `WithRaw`, are emitted in declaration order. Raw text appears exactly where it is declared among other members, so use this feature carefully to maintain readable generated code.
 
 ---
 
