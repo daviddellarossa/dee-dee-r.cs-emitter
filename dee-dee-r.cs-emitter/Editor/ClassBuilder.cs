@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using DeeDeeR.CsEmitter.DeeDeeR.CsEmitter;
+using DeeDeeR.CsEmitter;
 
 namespace DeeDeeR.CsEmitter
 {
