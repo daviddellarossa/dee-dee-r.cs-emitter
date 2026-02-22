@@ -207,6 +207,40 @@ public class MyClass
 
 ---
 
+### Raw text
+
+Use `WithRaw()` to insert arbitrary text at any point in the class body. This is useful for preprocessor directives, pragma statements, or other constructs not directly supported by the builder API.
+
+```csharp
+cls.WithField("_cached", CsType.Of("MessageBusRuntime"), f => f
+        .WithVisibility(Visibility.Private))
+    .WithRaw("#if UNITY_EDITOR")
+    .WithMethod("OnDisable", CsType.Void, m => m
+        .WithVisibility(Visibility.Private)
+        .WithBody(body => body
+            .Assign("_cached", "null")))
+    .WithRaw("#endif")
+```
+
+Generates:
+
+```csharp
+public class MyClass
+{
+    private MessageBusRuntime _cached;
+#if UNITY_EDITOR
+    private void OnDisable()
+    {
+        _cached = null;
+    }
+#endif
+}
+```
+
+**Note**: Raw text is emitted at the position it's added relative to other members, regardless of the normal member ordering (fields, properties, constructors, methods). Use this feature carefully to maintain readable generated code.
+
+---
+
 ### XML documentation
 
 ```csharp
@@ -283,6 +317,20 @@ Generates:
 [StructLayout(LayoutKind.Sequential)]
 public struct Bounds2D
 ```
+
+### Raw text
+
+Use `WithRaw()` to insert arbitrary text within the struct body:
+
+```csharp
+s.WithField("Value", CsType.Int)
+ .WithRaw("#if DEBUG")
+ .WithMethod("Validate", CsType.Void, m => m
+     .WithBody(body => body.Call("Debug.Assert", "Value >= 0")))
+ .WithRaw("#endif")
+```
+
+See the [Raw text section](#raw-text) in ClassBuilder for more details.
 
 ### Example
 

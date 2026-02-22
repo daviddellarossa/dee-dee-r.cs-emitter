@@ -505,7 +505,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
 
         [Test]
-        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsAfterXmlDoc()
         {
             var property = PropertyBuilder.Build(_emitter, "MyProperty", CsType.Float)
                 .WithAttribute("field: SerializeField")
@@ -516,7 +516,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var attributeIndex = property.IndexOf("[field: SerializeField]");
             var xmlDocIndex = property.IndexOf("///");
 
-            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+            Assert.That(attributeIndex, Is.GreaterThan(xmlDocIndex));
         }
 
         [Test]

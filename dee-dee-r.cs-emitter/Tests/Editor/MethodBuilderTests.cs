@@ -557,7 +557,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
         }
 
         [Test]
-        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsBeforeXmlDoc()
+        public void Emit_WithAttributeAndXmlDoc_AttributeAppearsAfterXmlDoc()
         {
             var method = MethodBuilder.Build(_emitter, "MyMethod", CsType.Void)
                 .WithAttribute("Obsolete")
@@ -567,7 +567,7 @@ namespace DeeDeeR.CsEmitter.Tests.Editor
             var attributeIndex = method.IndexOf("[Obsolete]");
             var xmlDocIndex = method.IndexOf("///");
 
-            Assert.That(attributeIndex, Is.LessThan(xmlDocIndex));
+            Assert.That(attributeIndex, Is.GreaterThan(xmlDocIndex));
         }
 
         [Test]
